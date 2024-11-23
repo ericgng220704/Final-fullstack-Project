@@ -1,0 +1,56 @@
+<main>
+  <%= render "shared/navbar" %>
+
+  <div class="container mt-5 text-center">
+    <!-- Page Title -->
+    <h1 class="mb-4"><%= @page.title %></h1>
+
+    <!-- Page Content -->
+    <div class="page-content mb-4">
+      <%= @page.content.html_safe %>
+    </div>
+
+    <!-- Conditional Rendering for About Page -->
+    <% if @page.title == "About" %>
+      <div class="mb-1 mt-1">
+        <img src="/img/hero.jpg" class="img-fluid rounded" alt="About Us Placeholder Image">
+      </div>
+
+      <h2>Our Mission</h2>
+      <p>To inspire and enable people to create a better everyday life through well-designed, functional, and affordable furniture.</p>
+
+      <h2>Sustainability Practices</h2>
+      <ul class="list-unstyled">
+        <li><strong>Eco-Friendly Materials:</strong> FSC-certified wood, recycled plastics, and sustainable fabrics.</li>
+        <li><strong>Carbon Neutral Goals:</strong> Striving to become carbon neutral by 2030.</li>
+        <li><strong>Community Engagement:</strong> Partnering with local artisans and supporting fair-trade practices.</li>
+      </ul>
+
+    <% end %>
+
+    <!-- Conditional Rendering for Contact Page -->
+    <% if @page.title == "Contact" %>
+      <h2>Contact Us</h2>
+      <p>We’d love to hear from you! Whether you have questions, need assistance, or want to share feedback, we’re here to help.</p>
+
+      <h2>Contact Form</h2>
+      <div class="d-flex justify-content-center">
+        <%= form_with url: contact_path, method: :post, local: true, class: "w-50" do |f| %>
+          <div class="mb-3">
+            <%= f.label :name, "Your Name", class: "form-label" %>
+            <%= f.text_field :name, class: "form-control", required: true %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :email, "Your Email", class: "form-label" %>
+            <%= f.email_field :email, class: "form-control", required: true %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :message, "Your Message", class: "form-label" %>
+            <%= f.text_area :message, rows: 4, class: "form-control", required: true %>
+          </div>
+          <%= f.submit "Send Message", class: "btn btn-primary w-100" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</main>

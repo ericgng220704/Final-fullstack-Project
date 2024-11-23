@@ -11,6 +11,7 @@ ActiveAdmin.register Product do
       f.input :name
       f.input :short_description
       f.input :description
+      f.input :image_path
       f.input :price
       f.input :stock_quantity
       f.input :other_color

@@ -12,4 +12,22 @@ class Product < ApplicationRecord
   def self.ransackable_attributes(auth_object = nil)
     %w[id name short_description description price stock_quantity category_id depth height width created_at updated_at]
   end
+
+   # Scope for new products (added within the last 3 days)
+   scope :new_products, -> { where('created_at >= ?', 3.days.ago) }
+
+   # Scope for recently updated products (updated within the last 3 days)
+   scope :recently_updated, -> { where('updated_at >= ?', 3.days.ago) }
+
+   # Scope for keyword search
+   scope :search, ->(query) {
+     where('title ILIKE ? OR description ILIKE ?', "%#{query}%", "%#{query}%")
+   }
+
+   # Scope for filtering by category
+   scope :by_category, ->(category) {
+     joins(:category).where(categories: { name: category }) if category.present?
+   }
+
+   belongs_to :category
 end
