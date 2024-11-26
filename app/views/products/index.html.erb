@@ -44,6 +44,13 @@
               <p class="card-text"><%= truncate(product.short_description, length: 100) %></p>
               <p class="card-text fw-bold">Price: $<%= product.price %></p>
               <%= link_to 'View Details', product_path(product), class: 'btn btn-outline-primary' %>
+              <%= form_with url: add_to_cart_cart_path, method: :post, local: true do |f| %>
+                <%= f.hidden_field :product_id, value: product.id %>
+                <div class="input-group mb-3">
+                  <%= f.number_field :quantity, value: 1, min: 1, class: "form-control" %>
+                  <button type="submit" class="btn btn-primary">Add to Cart</button>
+                </div>
+              <% end %>
             </div>
           </div>
         </div>

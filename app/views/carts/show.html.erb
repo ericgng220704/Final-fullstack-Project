@@ -1,0 +1,46 @@
+<h1>Your Cart</h1>
+
+<pre>Session Data: <%= session[:cart].inspect %></pre>
+
+<% if @cart_items.empty? %>
+  <p>Your cart is empty.</p>
+<% else %>
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Total</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @cart_items.each do |item| %>
+        <tr>
+          <td><%= item[:product].name %></td>
+          <td>
+            <%= form_with url: update_item_cart_path, method: :patch, local: true do |f| %>
+              <%= f.hidden_field :product_id, value: item[:product].id %>
+              <%= f.number_field :quantity, value: item[:quantity], min: 1 %>
+              <%= f.submit "Update" %>
+            <% end %>
+          </td>
+          <td><%= number_to_currency(item[:product].price) %></td>
+          <td><%= number_to_currency(item[:product].price * item[:quantity]) %></td>
+          <td>
+            <%= button_to "Remove", remove_item_cart_path(product_id: item[:product].id), method: :delete %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <p>Total: <%= number_to_currency(@cart_items.sum { |item| item[:product].price * item[:quantity] }) %></p>
+
+  <%= button_to "Clear Cart", clear_cart_cart_path, method: :delete, class: "btn btn-danger" %>
+  <% unless user_signed_in? %>
+  <p>Please <%= link_to "login", new_user_session_path %> or <%= link_to "sign up", new_user_registration_path %> to complete checkout.</p>
+  <% else %>
+    <%= link_to "Proceed to Checkout", new_order_path, class: "btn btn-primary" %>
+  <% end %>
+<% end %>
