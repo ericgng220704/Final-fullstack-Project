@@ -17,12 +17,17 @@ class Product < ApplicationRecord
    scope :new_products, -> { where('created_at >= ?', 3.days.ago) }
 
    # Scope for recently updated products (updated within the last 3 days)
-   scope :recently_updated, -> { where('updated_at >= ?', 3.days.ago) }
+   scope :recently_updated, -> {
+  where('updated_at >= ?', 3.days.ago)
+  .where('created_at < ?', 3.days.ago)
+  }
+
 
    # Scope for keyword search
    scope :search, ->(query) {
-     where('title ILIKE ? OR description ILIKE ?', "%#{query}%", "%#{query}%")
-   }
+  where('name ILIKE ? OR short_description ILIKE ? OR description ILIKE ?', "%#{query}%", "%#{query}%", "%#{query}%")
+  }
+
 
    # Scope for filtering by category
    scope :by_category, ->(category) {

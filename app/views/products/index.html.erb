@@ -1,51 +1,58 @@
 <main>
   <%= render "shared/navbar" %>
 
-<div class="container mt-5">
-  <h1 class="text-center mb-4">Our Products</h1>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">Our Products</h1>
 
-  <!-- Search form -->
-  <div class="row mb-4">
-    <div class="col-md-12">
-      <%= form_with url: products_path, method: :get, local: true, class: 'row g-3' do %>
-        <div class="col-md-6">
-          <%= text_field_tag :query, params[:query], placeholder: 'Search products...', class: 'form-control' %>
-        </div>
-        <div class="col-md-4">
-          <%= select_tag :category, options_for_select(Category.pluck(:name), params[:category]), prompt: 'Select Category', class: 'form-select' %>
-        </div>
-        <div class="col-md-2">
-          <%= submit_tag 'Search', class: 'btn btn-primary w-100' %>
+    <!-- Filter Buttons -->
+    <div class="row mb-4">
+      <div class="col-md-12 text-center">
+        <%= link_to 'Recently Added', products_path(filter: 'recently_added'), class: 'btn btn-success me-2' %>
+        <%= link_to 'Recently Updated', products_path(filter: 'recently_updated'), class: 'btn btn-warning' %>
+      </div>
+    </div>
+
+    <!-- Search form -->
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <%= form_with url: products_path, method: :get, local: true, class: 'row g-3' do %>
+          <div class="col-md-6">
+            <%= text_field_tag :query, params[:query], placeholder: 'Search products...', class: 'form-control' %>
+          </div>
+          <div class="col-md-4">
+            <%= select_tag :category, options_for_select(Category.pluck(:name), params[:category]), prompt: 'Select Category', class: 'form-select' %>
+          </div>
+          <div class="col-md-2">
+            <%= submit_tag 'Search', class: 'btn btn-primary w-100' %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div class="row">
+      <% @products.each do |product| %>
+        <div class="col-md-4 mb-4">
+          <div class="card h-100">
+            <% if product.image_path.present? %>
+              <img src="/<%= product.image_path %>" class="card-img-top" alt="<%= product.name %>">
+            <% else %>
+              <img src="/img/placeholder.jpg" class="card-img-top" alt="Placeholder Image">
+            <% end %>
+            <div class="card-body">
+              <h5 class="card-title"><%= product.name %></h5>
+              <p class="card-text"><%= truncate(product.short_description, length: 100) %></p>
+              <p class="card-text fw-bold">Price: $<%= product.price %></p>
+              <%= link_to 'View Details', product_path(product), class: 'btn btn-outline-primary' %>
+            </div>
+          </div>
         </div>
       <% end %>
     </div>
-  </div>
 
-  <!-- Products -->
-  <div class="row">
-    <% @products.each do |product| %>
-      <div class="col-md-4 mb-4">
-        <div class="card h-100">
-          <% if product.image_path.present? %>
-            <img src="/<%= product.image_path %>" class="card-img-top" alt="<%= product.name %>">
-          <% else %>
-            <img src="/img/placeholder.jpg" class="card-img-top" alt="Placeholder Image">
-          <% end %>
-          <div class="card-body">
-            <h5 class="card-title"><%= product.name %></h5>
-            <p class="card-text"><%= truncate(product.short_description, length: 100) %></p>
-            <p class="card-text fw-bold">Price: $<%= product.price %></p>
-            <%= link_to 'View Details', product_path(product), class: 'btn btn-outline-primary' %>
-          </div>
-        </div>
-      </div>
-    <% end %>
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center">
+      <%= paginate @products %>
+    </div>
   </div>
-
-  <!-- Pagination -->
-  <div class="d-flex justify-content-center">
-    <%= paginate @products %>
-  </div>
-</div>
-
 </main>
