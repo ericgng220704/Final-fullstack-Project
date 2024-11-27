@@ -5,6 +5,16 @@ class CartsController < ApplicationController
       product = Product.find_by(id: product_id)
       { product: product, quantity: quantity.to_i } if product
     end&.compact || []
+
+    @subtotal = @cart_items.sum { |item| item[:product].price * item[:quantity] }
+
+    if current_user&.province.present?
+      @tax = TaxHelper.calculate_tax(@subtotal, current_user.province)
+    else
+      @tax = 0
+    end
+
+    @total = @subtotal + @tax
   end
 
   def add_to_cart

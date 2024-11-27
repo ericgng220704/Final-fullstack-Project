@@ -18,4 +18,6 @@ class User < ApplicationRecord
   # Validations
   validates :address, presence: true
   validates :phone_number, presence: true
+  validates :province, presence: true
+  validates :city, presence: true
 end

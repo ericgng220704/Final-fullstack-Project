@@ -1,4 +1,6 @@
 class CheckoutController < ApplicationController
+  include TaxHelper
+
   def create
     session[:cart] ||= {}
     cart_items = session[:cart].map do |product_id, quantity|
@@ -19,6 +21,33 @@ class CheckoutController < ApplicationController
       redirect_to cart_path, alert: "Your cart is empty. Add items before proceeding to checkout."
       return
     end
+
+    # Calculate the subtotal, tax, and total
+    subtotal = session[:cart].sum do |product_id, quantity|
+      product = Product.find(product_id)
+      product.price * quantity
+    end
+
+    # Ensure the user has a valid province
+    if current_user&.province.blank?
+      redirect_to cart_path, alert: "Please update your profile with your province to calculate taxes."
+      return
+    end
+
+    tax = TaxHelper.calculate_tax(subtotal, current_user.province)
+    total = subtotal + tax
+
+    # Add a "tax" item to the Stripe Checkout Session
+    cart_items << {
+      price_data: {
+        currency: 'cad',
+        product_data: {
+          name: "Tax (#{current_user.province})",
+        },
+        unit_amount: (tax * 100).to_i, # Amount in cents
+      },
+      quantity: 1,
+    }
 
     # Create Stripe Checkout Session
     checkout_session = Stripe::Checkout::Session.create(
@@ -43,13 +72,20 @@ class CheckoutController < ApplicationController
         { product: product, quantity: quantity }
       end
 
-       Rails.logger.debug "Cart Items: #{cart_items.inspect}"
+      # Calculate subtotal and tax for the order
+      subtotal = cart_items.sum { |item| item[:product].price * item[:quantity] }
+      tax = TaxHelper.calculate_tax(subtotal, current_user.province)
+      total = subtotal + tax
 
-       # Create a new order for the current user
+      Rails.logger.debug "Cart Items: #{cart_items.inspect}"
+
+      # Create a new order for the current user
       order = current_user.orders.build(
         order_date: Time.current,
         status: "completed",
-        total_amount: cart_items.sum { |item| item[:product].price * item[:quantity] }
+        subtotal: subtotal,
+        tax: tax,
+        total_amount: total
       )
 
       # Add items to the order

@@ -1,21 +1,19 @@
-<main>
-  <%= render "shared/navbar" %>
+<div class="container my-5">
+  <h1 class="mb-4">Your Cart</h1>
 
-  <h1>Your Cart</h1>
-
-  <pre>Session Data: <%= session[:cart].inspect %></pre>
+  <pre class="bg-light p-3">Session Data: <%= session[:cart].inspect %></pre>
 
   <% if @cart_items.empty? %>
-    <p>Your cart is empty.</p>
+    <p class="alert alert-warning">Your cart is empty.</p>
   <% else %>
-    <table>
-      <thead>
+    <table class="table table-bordered table-hover">
+      <thead class="thead-light">
         <tr>
-          <th>Product</th>
-          <th>Quantity</th>
-          <th>Price</th>
-          <th>Total</th>
-          <th>Actions</th>
+          <th scope="col">Product</th>
+          <th scope="col">Quantity</th>
+          <th scope="col">Price</th>
+          <th scope="col">Total</th>
+          <th scope="col">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -23,36 +21,57 @@
           <tr>
             <td><%= item[:product].name %></td>
             <td>
-              <%= form_with url: update_item_cart_path, method: :patch, local: true do |f| %>
+              <%= form_with url: update_item_cart_path, method: :patch, local: true, class: "form-inline" do |f| %>
                 <%= f.hidden_field :product_id, value: item[:product].id %>
-                <%= f.number_field :quantity, value: item[:quantity], min: 1 %>
-                <%= f.submit "Update" %>
+                <%= f.number_field :quantity, value: item[:quantity], min: 1, class: "form-control w-50 mr-2" %>
+                <%= f.submit "Update", class: "btn btn-outline-primary btn-sm" %>
               <% end %>
             </td>
             <td><%= number_to_currency(item[:product].price) %></td>
             <td><%= number_to_currency(item[:product].price * item[:quantity]) %></td>
             <td>
-              <%= button_to "Remove", remove_item_cart_path(product_id: item[:product].id), method: :delete %>
+              <%= button_to "Remove", remove_item_cart_path(product_id: item[:product].id), method: :delete, class: "btn btn-outline-danger btn-sm" %>
             </td>
           </tr>
         <% end %>
       </tbody>
     </table>
-    <p>Total: <%= number_to_currency(@cart_items.sum { |item| item[:product].price * item[:quantity] }) %></p>
 
-    <%= button_to "Clear Cart", clear_cart_cart_path, method: :delete, class: "btn btn-danger" %>
-    <% unless user_signed_in? %>
-    <p>Please <%= link_to "login", new_user_session_path %> or <%= link_to "sign up", new_user_registration_path %> to complete checkout.</p>
-    <% else %>
-      <button id="checkout-button" class="btn btn-primary" data-turbo="false">Proceed to Checkout</button>
-    <% end %>
+    <!-- Invoice Section -->
+    <div id="invoice" class="card bg-light p-4 my-4">
+      <h2 class="card-title mb-3">Invoice Summary</h2>
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between">
+          <span>Subtotal:</span>
+          <strong><%= number_to_currency(@subtotal) %></strong>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span>Tax (<%= current_user.province %>):</span>
+          <strong><%= number_to_currency(@tax) %></strong>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span>Total:</span>
+          <strong><%= number_to_currency(@total) %></strong>
+        </li>
+      </ul>
+    </div>
+
+    <div class="d-flex justify-content-between">
+      <%= button_to "Clear Cart", clear_cart_cart_path, method: :delete, class: "btn btn-danger" %>
+
+      <% unless user_signed_in? %>
+        <p class="text-muted">Please <%= link_to "login", new_user_session_path %> or <%= link_to "sign up", new_user_registration_path %> to complete checkout.</p>
+      <% else %>
+        <button id="checkout-button" class="btn btn-primary" data-turbo="false">Proceed to Checkout</button>
+      <% end %>
+    </div>
   <% end %>
+</div>
 
+<script>
+  const stripe = Stripe('<%= ENV["STRIPE_PUBLIC_KEY"] %>');
 
-  <script>
-    const stripe = Stripe('<%= ENV["STRIPE_PUBLIC_KEY"] %>');
-
-    document.addEventListener("turbo:load", function() {
+  document.addEventListener("turbo:load", function() {
     if (document.getElementById("checkout-button")) {
       console.log("Initializing Stripe on Turbo load...");
       const stripe = Stripe('<%= ENV["STRIPE_PUBLIC_KEY"] %>');
@@ -76,6 +95,4 @@
       });
     }
   });
-
-  </script>
-</main>
+</script>
