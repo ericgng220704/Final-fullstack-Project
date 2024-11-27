@@ -1,14 +1,8 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg fixed-top bg-light navbar-light mb-4">
   <div class="container">
-    <%# <a class="navbar-brand" href="/"
-      ><img
-        id="MDB-logo"
-        src="https://mdbcdn.b-cdn.net/wp-content/uploads/2018/06/logo-mdb-jquery-small.png"
-        alt="MDB Logo"
-        draggable="false"
-        height="30"
-    /></a> %>
+    <a class="navbar-brand" href="/"
+      >Eric Interiors</a>
     <button
       class="navbar-toggler"
       type="button"
@@ -37,7 +31,7 @@
         <li class="nav-item ms-3">
           <% if user_signed_in? %>
             <p>Welcome, <%= current_user.first_name %>!</p>
-            <%= link_to "Logout", destroy_user_session_path, method: :delete %>
+            <%= link_to "Logout", destroy_user_session_path, data: { "turbo-method": :delete } %>
           <% else %>
             <%= link_to "Login", new_user_session_path %> |
             <%= link_to "Sign Up", new_user_registration_path %>

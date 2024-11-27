@@ -18,9 +18,11 @@ Rails.application.routes.draw do
     delete :clear_cart, on: :collection
   end
 
-  resources :orders, only: [:new, :create, :show]
+  resources :orders, only: [:index, :show]
 
   post '/checkout/create', to: 'checkout#create', as: :create_checkout_session
+  get '/checkout/success', to: 'checkout#success', as: :checkout_success
+  get '/checkout/cancel', to: 'checkout#cancel', as: :checkout_cancel
 
 
   root 'home#index'

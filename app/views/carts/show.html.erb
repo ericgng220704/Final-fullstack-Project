@@ -1,46 +1,81 @@
-<h1>Your Cart</h1>
+<main>
+  <%= render "shared/navbar" %>
 
-<pre>Session Data: <%= session[:cart].inspect %></pre>
+  <h1>Your Cart</h1>
 
-<% if @cart_items.empty? %>
-  <p>Your cart is empty.</p>
-<% else %>
-  <table>
-    <thead>
-      <tr>
-        <th>Product</th>
-        <th>Quantity</th>
-        <th>Price</th>
-        <th>Total</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @cart_items.each do |item| %>
-        <tr>
-          <td><%= item[:product].name %></td>
-          <td>
-            <%= form_with url: update_item_cart_path, method: :patch, local: true do |f| %>
-              <%= f.hidden_field :product_id, value: item[:product].id %>
-              <%= f.number_field :quantity, value: item[:quantity], min: 1 %>
-              <%= f.submit "Update" %>
-            <% end %>
-          </td>
-          <td><%= number_to_currency(item[:product].price) %></td>
-          <td><%= number_to_currency(item[:product].price * item[:quantity]) %></td>
-          <td>
-            <%= button_to "Remove", remove_item_cart_path(product_id: item[:product].id), method: :delete %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-  <p>Total: <%= number_to_currency(@cart_items.sum { |item| item[:product].price * item[:quantity] }) %></p>
+  <pre>Session Data: <%= session[:cart].inspect %></pre>
 
-  <%= button_to "Clear Cart", clear_cart_cart_path, method: :delete, class: "btn btn-danger" %>
-  <% unless user_signed_in? %>
-  <p>Please <%= link_to "login", new_user_session_path %> or <%= link_to "sign up", new_user_registration_path %> to complete checkout.</p>
+  <% if @cart_items.empty? %>
+    <p>Your cart is empty.</p>
   <% else %>
-    <%= link_to "Proceed to Checkout", new_order_path, class: "btn btn-primary" %>
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Price</th>
+          <th>Total</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @cart_items.each do |item| %>
+          <tr>
+            <td><%= item[:product].name %></td>
+            <td>
+              <%= form_with url: update_item_cart_path, method: :patch, local: true do |f| %>
+                <%= f.hidden_field :product_id, value: item[:product].id %>
+                <%= f.number_field :quantity, value: item[:quantity], min: 1 %>
+                <%= f.submit "Update" %>
+              <% end %>
+            </td>
+            <td><%= number_to_currency(item[:product].price) %></td>
+            <td><%= number_to_currency(item[:product].price * item[:quantity]) %></td>
+            <td>
+              <%= button_to "Remove", remove_item_cart_path(product_id: item[:product].id), method: :delete %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <p>Total: <%= number_to_currency(@cart_items.sum { |item| item[:product].price * item[:quantity] }) %></p>
+
+    <%= button_to "Clear Cart", clear_cart_cart_path, method: :delete, class: "btn btn-danger" %>
+    <% unless user_signed_in? %>
+    <p>Please <%= link_to "login", new_user_session_path %> or <%= link_to "sign up", new_user_registration_path %> to complete checkout.</p>
+    <% else %>
+      <button id="checkout-button" class="btn btn-primary" data-turbo="false">Proceed to Checkout</button>
+    <% end %>
   <% end %>
-<% end %>
+
+
+  <script>
+    const stripe = Stripe('<%= ENV["STRIPE_PUBLIC_KEY"] %>');
+
+    document.addEventListener("turbo:load", function() {
+    if (document.getElementById("checkout-button")) {
+      console.log("Initializing Stripe on Turbo load...");
+      const stripe = Stripe('<%= ENV["STRIPE_PUBLIC_KEY"] %>');
+
+      document.getElementById('checkout-button').addEventListener('click', function () {
+        fetch('<%= create_checkout_session_path %>', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': '<%= form_authenticity_token %>'
+          },
+          body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(session => {
+          return stripe.redirectToCheckout({ sessionId: session.id });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+      });
+    }
+  });
+
+  </script>
+</main>

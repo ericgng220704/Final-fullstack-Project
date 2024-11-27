@@ -1,0 +1,27 @@
+<h1>Order ##<%= @order.id %></h1>
+<p><strong>Date:</strong> <%= @order.created_at.strftime("%B %d, %Y") %></p>
+<p><strong>Total Price:</strong> <%= number_to_currency(@order.total_amount) %></p>
+
+<h3>Order Items</h3>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>Quantity</th>
+      <th>Price</th>
+      <th>Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @order.order_items.each do |item| %>
+      <tr>
+        <td><%= item.product.name %></td>
+        <td><%= item.quantity %></td>
+        <td><%= number_to_currency(item.price_at_purchase) %></td>
+        <td><%= number_to_currency(item.price_at_purchase * item.quantity) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to "Back to Orders", orders_path, class: "btn btn-secondary" %>

@@ -1,0 +1,28 @@
+<h1>Your Orders</h1>
+
+<% if @orders.any? %>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Order #</th>
+        <th>Date</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @orders.each do |order| %>
+        <tr>
+          <td><%= order.id %></td>
+          <td><%= order.created_at.strftime("%B %d, %Y") %></td>
+          <td><%= number_to_currency(order.total_amount) %></td>
+          <td><%= order.status || "Processing" %></td>
+          <td><%= link_to "View", order_path(order), class: "btn btn-primary btn-sm" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>You have no orders yet.</p>
+<% end %>

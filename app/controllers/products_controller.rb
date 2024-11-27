@@ -1,7 +1,7 @@
 class ProductsController < ApplicationController
   def index
     # Fetch all products
-    @products = Product.all
+    @products = Product.init
 
     # Filter by category if parameter is provided
     @products = @products.by_category(params[:category]) if params[:category].present?
