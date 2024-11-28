@@ -83,8 +83,6 @@ class CheckoutController < ApplicationController
       order = current_user.orders.build(
         order_date: Time.current,
         status: "completed",
-        subtotal: subtotal,
-        tax: tax,
         total_amount: total
       )
 

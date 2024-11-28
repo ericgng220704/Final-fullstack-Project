@@ -1,4 +1,6 @@
 class CartsController < ApplicationController
+  before_action :authenticate_user!
+
   def show
     # Retrieve product details for all items in the cart
     @cart_items = session[:cart]&.map do |product_id, quantity|
