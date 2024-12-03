@@ -25,4 +25,11 @@ module TaxHelper
 
     gst + pst + hst
   end
+
+  def self.get_tax_rate(province)
+    rates = PROVINCE_TAX_RATES[province]
+    return 0 unless rates
+
+    rates[:gst] + rates[:pst] + rates[:hst]
+  end
 end

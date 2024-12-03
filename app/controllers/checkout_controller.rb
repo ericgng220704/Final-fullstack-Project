@@ -11,9 +11,11 @@ class CheckoutController < ApplicationController
           product_data: {
             name: product.name,
           },
-          unit_amount: (product.price * 100).to_i, # Amount in cents
+          unit_amount: (product.price * 100).to_i,
         },
         quantity: quantity,
+        product: product,
+        quantity_value: quantity
       }
     end
 
@@ -22,7 +24,7 @@ class CheckoutController < ApplicationController
       return
     end
 
-    # Calculate the subtotal, tax, and total
+    # Calculate subtotal, tax, and total
     subtotal = session[:cart].sum do |product_id, quantity|
       product = Product.find(product_id)
       product.price * quantity
@@ -35,75 +37,75 @@ class CheckoutController < ApplicationController
     end
 
     tax = TaxHelper.calculate_tax(subtotal, current_user.province)
+    tax_rate = TaxHelper.get_tax_rate(current_user.province)
     total = subtotal + tax
 
-    # Add a "tax" item to the Stripe Checkout Session
-    cart_items << {
-      price_data: {
-        currency: 'cad',
-        product_data: {
-          name: "Tax (#{current_user.province})",
-        },
-        unit_amount: (tax * 100).to_i, # Amount in cents
-      },
-      quantity: 1,
-    }
+    # Create a new order for the current user
+    order = current_user.orders.build(
+      order_date: Time.current,
+      status: "unpaid",
+      total_amount: total,
+      tax_rate: tax_rate
 
-    # Create Stripe Checkout Session
-    checkout_session = Stripe::Checkout::Session.create(
-      payment_method_types: ['card'],
-      line_items: cart_items,
-      mode: 'payment',
-      success_url: checkout_success_url,
-      cancel_url: cart_url,
     )
 
-    render json: { id: checkout_session.id }
+    # Add items to the order
+    cart_items.each do |item|
+      order.order_items.build(
+        product_id: item[:product].id,
+        quantity: item[:quantity_value],
+        price_at_purchase: item[:product].price
+      )
+    end
+
+    if order.save
+
+      # Add a "tax" item to the Stripe Checkout Session
+      stripe_items = cart_items.map do |item|
+        {
+          price_data: item[:price_data],
+          quantity: item[:quantity_value]
+        }
+      end
+
+      stripe_items << {
+        price_data: {
+          currency: 'cad',
+          product_data: {
+            name: "Tax (#{current_user.province})",
+          },
+          unit_amount: (tax * 100).to_i, # Amount in cents
+        },
+        quantity: 1,
+      }
+
+      # Create Stripe Checkout Session
+      checkout_session = Stripe::Checkout::Session.create(
+        payment_method_types: ['card'],
+        line_items: stripe_items,
+        mode: 'payment',
+        success_url: checkout_success_url(order_id: order.id),
+        cancel_url: cart_url,
+      )
+
+      render json: { id: checkout_session.id }
+    else
+      Rails.logger.debug "Order save failed: #{order.errors.full_messages}"
+      redirect_to cart_path, alert: "Could not create your order. Please try again."
+    end
   rescue Stripe::InvalidRequestError => e
     Rails.logger.error "Stripe error: #{e.message}"
     redirect_to cart_path, alert: "Something went wrong with Stripe. Please try again."
   end
 
   def success
-    # Ensure the user is logged in before creating an order
-    if user_signed_in?
-      cart_items = session[:cart].map do |product_id, quantity|
-        product = Product.find(product_id)
-        { product: product, quantity: quantity }
-      end
+    session[:cart] = {}
+    @order = current_user.orders.find(params[:order_id])
 
-      # Calculate subtotal and tax for the order
-      subtotal = cart_items.sum { |item| item[:product].price * item[:quantity] }
-      tax = TaxHelper.calculate_tax(subtotal, current_user.province)
-      total = subtotal + tax
-
-      Rails.logger.debug "Cart Items: #{cart_items.inspect}"
-
-      # Create a new order for the current user
-      order = current_user.orders.build(
-        order_date: Time.current,
-        status: "completed",
-        total_amount: total
-      )
-
-      # Add items to the order
-      cart_items.each do |item|
-        order.order_items.build(
-          product_id: item[:product].id,
-          quantity: item[:quantity],
-          price_at_purchase: item[:product].price
-        )
-      end
-
-      if order.save
-        session[:cart] = {} # Clear the cart after saving the order
-        redirect_to order_path(order), notice: "Your payment was successful! Order ##{order.id} has been created."
-      else
-        Rails.logger.debug "Order save failed: #{order.errors.full_messages}"
-        redirect_to cart_path, alert: "Payment succeeded, but we could not create your order. Please contact support."
-      end
+    if @order.update(status: 'paid')
+      redirect_to order_path(@order), notice: "Payment successful! Order ##{@order.id} has been created."
     else
-      redirect_to new_user_session_path, alert: "Please log in to complete your purchase."
+      redirect_to cart_path, alert: "Payment succeeded, but we could not update your order. Please contact support."
     end
   end
 

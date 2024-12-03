@@ -1,27 +1,45 @@
-<h1>Order ##<%= @order.id %></h1>
-<p><strong>Date:</strong> <%= @order.created_at.strftime("%B %d, %Y") %></p>
-<p><strong>Total Price:</strong> <%= number_to_currency(@order.total_amount) %></p>
+<div class="container my-5">
+  <div class="card">
+    <div class="card-header text-white">
+      <h4>Order Details</h4>
+    </div>
+    <div class="card-body">
+      <p><strong>Order ID:</strong> <%= @order.id %></p>
+      <p><strong>Status:</strong> <%= @order.status.capitalize %></p>
 
-<h3>Order Items</h3>
-<table class="table">
-  <thead>
-    <tr>
-      <th>Product</th>
-      <th>Quantity</th>
-      <th>Price</th>
-      <th>Total</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @order.order_items.each do |item| %>
-      <tr>
-        <td><%= item.product.name %></td>
-        <td><%= item.quantity %></td>
-        <td><%= number_to_currency(item.price_at_purchase) %></td>
-        <td><%= number_to_currency(item.price_at_purchase * item.quantity) %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+      <h5>Order Items</h5>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @order.order_items.each do |item| %>
+            <tr>
+              <td><%= item.product.name %></td>
+              <td><%= item.quantity %></td>
+              <td>$<%= item.price_at_purchase %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <p><strong>Tax Rate:</strong> <%= @order.tax_rate * 100 %>%</p>
+      <p><strong>Total Amount:</strong> $<%= @order.total_amount %></p>
+    </div>
+    <div class="card-footer d-flex justify-content-between align-items-center">
+      <%= link_to "Back to Orders", orders_path, class: "btn btn-secondary text-white" %>
 
-<%= link_to "Back to Orders", orders_path, class: "btn btn-secondary" %>
+      <div>
+        <% if @order.cancelable? %>
+          <%= button_to "Cancel Order", cancel_user_order_path(@order), method: :patch, class: "btn btn-danger me-2", data: { confirm: "Are you sure you want to cancel this order?" } %>
+        <% end %>
+        <% if @order.confirmable? %>
+          <%= button_to "Confirm Delivery", confirm_user_order_path(@order), method: :patch, class: "btn btn-success" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

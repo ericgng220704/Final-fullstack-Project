@@ -1,0 +1,51 @@
+<div class="container my-5">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card">
+        <div class="card-header text-white">
+          <h4 class="mb-0">Your Profile</h4>
+        </div>
+        <div class="card-body">
+          <p><strong>Name:</strong> <%= @user.first_name %> <%= @user.last_name %></p>
+          <p><strong>Email:</strong> <%= @user.email %></p>
+        </div>
+        <div class="card-footer text-end">
+          <%= link_to "Edit Profile", edit_user_registration_path, class: "btn btn-warning me-2 text-white" %>
+          <%= link_to "Change Password", edit_user_registration_path, class: "btn btn-secondary me-2 text-white" %>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="card-header text-white">
+          <h4 class="mb-0">Your Orders</h4>
+        </div>
+        <div class="card-body">
+          <% if @orders.any? %>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @orders.each do |order| %>
+                  <tr>
+                    <td><%= order.id %></td>
+                    <td><%= order.status.capitalize %></td>
+                    <td>$<%= order.total_amount %></td>
+                    <td><%= order.created_at.strftime('%Y-%m-%d') %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          <% else %>
+            <p class="text-muted">You have no orders yet.</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

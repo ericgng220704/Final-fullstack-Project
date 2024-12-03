@@ -13,6 +13,7 @@ ActiveAdmin.register Order do
     column :status
     column :order_date
     column :total_amount
+    column :tax_rate
     column :user
     actions
   end
@@ -22,6 +23,7 @@ ActiveAdmin.register Order do
       f.input :status
       f.input :order_date, as: :date_picker
       f.input :total_amount
+      f.input :tax_rate
       f.input :user, as: :select, collection: User.all.map { |u| ["#{u.first_name} #{u.last_name} (#{u.email})", u.id] }
     end
     f.actions

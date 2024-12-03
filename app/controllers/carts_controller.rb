@@ -26,8 +26,6 @@ class CartsController < ApplicationController
 
     # Increment or set the quantity
     session[:cart][product_id] = (session[:cart][product_id] || 0) + quantity
-
-    redirect_to cart_path, notice: "Product added to cart!"
   end
 
   def update_item

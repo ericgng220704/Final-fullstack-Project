@@ -10,6 +10,13 @@ Rails.application.routes.draw do
   get '/about', to: 'pages#show', defaults: { id: 'About' }, as: :about
 
   resources :products, only: [:index, :show]
+  resource :profile, only: [:show, :edit, :update], controller: 'users'
+
+  resources :user_orders, only: [] do
+    patch :cancel, on: :member
+    patch :confirm, on: :member
+  end
+
 
   resource :cart, only: [:show] do
     post :add_to_cart, on: :collection
