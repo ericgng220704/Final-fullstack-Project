@@ -22,7 +22,7 @@ gem "jbuilder"
 gem 'devise' # Authentication
 gem 'activeadmin' # Admin dashboard
 gem 'active_storage_validations'
-gem 'bootstrap', '~> 5.2.0' # Styling
+gem 'bootstrap', '~> 5.3.3' # Styling
 gem 'sassc-rails'
 gem 'kaminari'
 gem 'bootstrap5-kaminari-views'
