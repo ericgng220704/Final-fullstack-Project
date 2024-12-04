@@ -32,11 +32,12 @@
       <% @products.each do |product| %>
         <div class="col-md-4 mb-4">
           <div class="card h-100">
-            <% if product.image_path.present? %>
-              <img src="/<%= product.image_path %>" class="card-img-top" alt="<%= product.name %>">
+            <% if product.image.attached? %>
+              <%= image_tag product.image, class: "card-img-top", alt: product.name %>
             <% else %>
-              <img src="/img/placeholder.jpg" class="card-img-top" alt="Placeholder Image">
+              <%= image_tag "https://railfinalprojectstorage.s3.us-east-2.amazonaws.com/img/placeholder.jpg", class: "card-img-top", alt: "Placeholder Image" %>
             <% end %>
+
             <div class="card-body">
               <h5 class="card-title"><%= product.name %></h5>
               <p class="card-text"><%= truncate(product.short_description, length: 100) %></p>
