@@ -29,7 +29,7 @@ gem 'bootstrap5-kaminari-views'
 gem 'stripe' # Payment integration
 gem 'rspec-rails', group: [:development, :test] # Testing
 gem 'faker', group: [:development, :test] # Sample data
-gem 'aws-sdk-s3', '~> 1.48', require: false
+gem 'aws-sdk-s3', '~> 1.176', require: false
 
 
 gem 'dotenv-rails', groups: [:development, :test]
